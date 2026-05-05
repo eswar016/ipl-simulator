@@ -30,6 +30,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [simulatedWinners, setSimulatedWinners] = useState({});
+  const [playoffSimulations, setPlayoffSimulations] = useState({});
 
   useEffect(() => {
     fetchData();
@@ -78,16 +79,30 @@ function App() {
     Object.values(data.matches).forEach(match => {
       if (!match.finalized && simulatedWinners[match.id]) {
         const winner = simulatedWinners[match.id];
-        const loser = match.team1 === winner ? match.team2 : match.team1;
         
-        if (teamStats[winner]) {
-          teamStats[winner].matches += 1;
-          teamStats[winner].wins += 1;
-          teamStats[winner].points += 2;
-        }
-        if (teamStats[loser]) {
-          teamStats[loser].matches += 1;
-          teamStats[loser].losses += 1;
+        if (winner === "NR") {
+          if (teamStats[match.team1]) {
+            teamStats[match.team1].matches += 1;
+            teamStats[match.team1].nr += 1;
+            teamStats[match.team1].points += 1;
+          }
+          if (teamStats[match.team2]) {
+            teamStats[match.team2].matches += 1;
+            teamStats[match.team2].nr += 1;
+            teamStats[match.team2].points += 1;
+          }
+        } else {
+          const loser = match.team1 === winner ? match.team2 : match.team1;
+          
+          if (teamStats[winner]) {
+            teamStats[winner].matches += 1;
+            teamStats[winner].wins += 1;
+            teamStats[winner].points += 2;
+          }
+          if (teamStats[loser]) {
+            teamStats[loser].matches += 1;
+            teamStats[loser].losses += 1;
+          }
         }
       }
     });
@@ -117,6 +132,59 @@ function App() {
   });
 
   const top4 = computedPointsTable.slice(0, 4);
+  const isLeagueComplete = remainingMatches.every(m => simulatedWinners[m.id]);
+
+  const q1Team1 = top4[0]?.team;
+  const q1Team2 = top4[1]?.team;
+  const elimTeam1 = top4[2]?.team;
+  const elimTeam2 = top4[3]?.team;
+
+  const q1Winner = playoffSimulations['Q1'];
+  const q1Loser = q1Winner ? (q1Winner === q1Team1 ? q1Team2 : q1Team1) : null;
+  const elimWinner = playoffSimulations['Elim'];
+
+  const q2Team1 = q1Loser;
+  const q2Team2 = elimWinner;
+  const q2Winner = playoffSimulations['Q2'];
+
+  const finalTeam1 = q1Winner;
+  const finalTeam2 = q2Winner;
+  const finalWinner = playoffSimulations['Final'];
+
+  const handlePlayoffSimulate = (match, team) => {
+     setPlayoffSimulations(prev => {
+        if(prev[match] === team) {
+           const next = {...prev};
+           delete next[match];
+           if(match === 'Q1' || match === 'Elim') { delete next['Q2']; delete next['Final']; }
+           if(match === 'Q2') delete next['Final'];
+           return next;
+        }
+        return {...prev, [match]: team};
+     });
+  };
+
+  const renderPlayoffNode = (title, matchId, team1, team2) => (
+    <div className="bracket-node">
+      <div className="bracket-title">{title}</div>
+      <div className="bracket-teams">
+        <button 
+           className={`bracket-team-btn ${playoffSimulations[matchId] === team1 ? 'selected' : ''}`}
+           onClick={() => team1 && team2 && handlePlayoffSimulate(matchId, team1)}
+           disabled={!team1 || !team2 || !isLeagueComplete}
+        >
+           {team1 || 'TBD'} {matchId === 'Q1' && team1 === q1Team1 ? '(1st)' : matchId === 'Q1' && team1 === q1Team2 ? '(2nd)' : ''} {matchId === 'Elim' && team1 === elimTeam1 ? '(3rd)' : matchId === 'Elim' && team1 === elimTeam2 ? '(4th)' : ''}
+        </button>
+        <button 
+           className={`bracket-team-btn ${playoffSimulations[matchId] === team2 ? 'selected' : ''}`}
+           onClick={() => team1 && team2 && handlePlayoffSimulate(matchId, team2)}
+           disabled={!team1 || !team2 || !isLeagueComplete}
+        >
+           {team2 || 'TBD'}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="app-container">
@@ -164,27 +232,22 @@ function App() {
 
           {top4.length === 4 && (
             <div className="bracket-container">
-              <div className="bracket-node">
-                <div className="bracket-title">Qualifier 1</div>
-                <div className="bracket-teams">
-                  <div className="bracket-team">{top4[0].team} (1st)</div>
-                  <div className="bracket-team">{top4[1].team} (2nd)</div>
-                </div>
-              </div>
-              <div className="bracket-node">
-                <div className="bracket-title">Eliminator</div>
-                <div className="bracket-teams">
-                  <div className="bracket-team">{top4[2].team} (3rd)</div>
-                  <div className="bracket-team">{top4[3].team} (4th)</div>
-                </div>
-              </div>
-              <div className="bracket-node">
-                <div className="bracket-title">Qualifier 2</div>
-                <div className="bracket-teams">
-                  <div className="bracket-team">Loser Q1</div>
-                  <div className="bracket-team">Winner Elim</div>
-                </div>
-              </div>
+              {!isLeagueComplete && (
+                 <div style={{gridColumn: '1/-1', textAlign: 'center', marginBottom: '1rem', color: 'var(--text-secondary)'}}>
+                   Complete all league fixtures to unlock interactive Playoff Simulator
+                 </div>
+              )}
+              {renderPlayoffNode("Qualifier 1", "Q1", q1Team1, q1Team2)}
+              {renderPlayoffNode("Eliminator", "Elim", elimTeam1, elimTeam2)}
+              {renderPlayoffNode("Qualifier 2", "Q2", q2Team1, q2Team2)}
+              {renderPlayoffNode("Final", "Final", finalTeam1, finalTeam2)}
+              
+              {finalWinner && (
+                 <div className="champion-node">
+                   <div className="champion-title">IPL 2026 Champions</div>
+                   <div className="champion-team">{finalWinner}</div>
+                 </div>
+              )}
             </div>
           )}
         </div>
@@ -211,7 +274,12 @@ function App() {
                     <TeamLogo team={match.team1} />
                     <span>{match.team1}</span>
                   </button>
-                  <span className="vs">VS</span>
+                  <button 
+                    className={`team-btn nr-btn ${simulatedWinners[match.id] === 'NR' ? 'selected' : ''}`}
+                    onClick={() => handleSimulateWinner(match.id, 'NR')}
+                  >
+                    <span>NR</span>
+                  </button>
                   <button 
                     className={`team-btn ${simulatedWinners[match.id] === match.team2 ? 'selected' : ''}`}
                     onClick={() => handleSimulateWinner(match.id, match.team2)}

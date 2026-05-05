@@ -55,6 +55,7 @@ header h1 {
   font-weight: 800;
   background: linear-gradient(135deg, #fff, #9ca3af);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   margin-bottom: 0.5rem;
 }
@@ -226,6 +227,21 @@ tr.top-4 {
   box-shadow: 0 0 10px currentColor;
 }
 
+.nr-btn {
+  flex: 0.4;
+  background: rgba(156, 163, 175, 0.1);
+  font-weight: 800;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  justify-content: center;
+}
+.nr-btn.selected {
+  background: rgba(156, 163, 175, 0.3);
+  border-color: rgba(156, 163, 175, 0.8);
+  box-shadow: 0 0 15px rgba(156, 163, 175, 0.2);
+  color: white;
+}
+
 .vs {
   font-weight: 800;
   color: var(--text-secondary);
@@ -268,11 +284,57 @@ tr.top-4 {
   gap: 0.5rem;
 }
 
-.bracket-team {
+.bracket-team-btn {
   background: rgba(255, 255, 255, 0.05);
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-radius: 4px;
   font-weight: 600;
+  border: 1px solid transparent;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+.bracket-team-btn:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+.bracket-team-btn.selected {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+}
+.bracket-team-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.champion-node {
+  margin-top: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.1), rgba(250, 204, 21, 0.2));
+  border: 1px solid rgba(250, 204, 21, 0.5);
+  border-radius: 12px;
+  text-align: center;
+  grid-column: 1 / -1;
+  animation: glow 2s infinite alternate;
+}
+@keyframes glow {
+  from { box-shadow: 0 0 10px rgba(250, 204, 21, 0.2); }
+  to { box-shadow: 0 0 20px rgba(250, 204, 21, 0.6); }
+}
+.champion-title {
+  color: #facc15;
+  font-size: 1.2rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 0.5rem;
+}
+.champion-team {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: white;
+  text-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
 }
 
 .loader {
