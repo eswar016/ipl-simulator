@@ -32,6 +32,8 @@ function App() {
   const [simulatedWinners, setSimulatedWinners] = useState({});
   const [playoffSimulations, setPlayoffSimulations] = useState({});
   const [filterTeam, setFilterTeam] = useState(null);
+  const [flaggedMatches, setFlaggedMatches] = useState({});
+  const [showFlaggedOnly, setShowFlaggedOnly] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -123,9 +125,19 @@ function App() {
   if (loading) return <div className="loader"></div>;
   if (error) return <div className="app-container" style={{color: '#ef4444'}}>{error}</div>;
 
+  const toggleFlag = (matchId) => {
+    setFlaggedMatches(prev => {
+      const next = {...prev};
+      if (next[matchId]) delete next[matchId];
+      else next[matchId] = true;
+      return next;
+    });
+  };
+
   const allMatches = Object.values(data.matches);
   const remainingMatches = allMatches.filter(m => {
       if(m.finalized) return false;
+      if(showFlaggedOnly && !flaggedMatches[m.id]) return false;
       if(filterTeam && m.team1 !== filterTeam && m.team2 !== filterTeam) return false;
       return true;
   }).sort((a, b) => {
@@ -262,7 +274,15 @@ function App() {
           <h2 className="section-title">Remaining Fixtures</h2>
           
           <div className="filter-container">
-            <p className="filter-title">Filter by Team:</p>
+            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem'}}>
+               <p className="filter-title" style={{margin: 0}}>Filter by Team:</p>
+               <button 
+                  className={`flag-filter-btn ${showFlaggedOnly ? 'active' : ''}`}
+                  onClick={() => setShowFlaggedOnly(!showFlaggedOnly)}
+               >
+                 🚩 Flagged Only
+               </button>
+            </div>
             <div className="team-filters">
               {Object.keys(TEAM_COLORS).map(team => (
                 <button 
@@ -285,7 +305,16 @@ function App() {
             {remainingMatches.map(match => (
               <div className="match-card" key={match.id}>
                 <div className="match-header">
-                  <span>{match.matchDesc || match.id}</span>
+                  <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
+                     <button 
+                       className={`flag-btn ${flaggedMatches[match.id] ? 'active' : ''}`}
+                       onClick={() => toggleFlag(match.id)}
+                       title="Flag for later review"
+                     >
+                       {flaggedMatches[match.id] ? '🚩' : '🏳️'}
+                     </button>
+                     <span>{match.matchDesc || match.id}</span>
+                  </div>
                   <span>{match.startDate ? new Date(match.startDate).toLocaleDateString() : 'TBD'}</span>
                 </div>
                 <div className="match-teams">
