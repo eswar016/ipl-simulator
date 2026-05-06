@@ -207,6 +207,9 @@ function App() {
       <header>
         <h1>IPL 2026 Simulator</h1>
         <p>Predict remaining fixtures and see live playoff scenarios</p>
+        <button className="export-btn" onClick={() => window.print()}>
+           ⬇️ Export Predictions as PDF
+        </button>
       </header>
 
       <div className="main-content">
