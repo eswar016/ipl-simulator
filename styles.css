@@ -462,16 +462,25 @@ tr.top-4 {
 
 /* Print Styles */
 @media print {
-  body {
-    background-color: #0b0f19 !important;
-    color: white !important;
+  *, *::before, *::after {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   
+  html, body, #root, .app-container {
+    background-color: #0b0f19 !important;
+    background-image: none !important;
+    color: white !important;
+  }
+  
+  body {
+    margin: 0;
+    padding: 0;
+  }
+  
   .app-container {
     display: block !important;
-    padding: 0;
+    padding: 2rem !important;
   }
   
   .export-btn, .filter-container {
