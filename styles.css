@@ -147,6 +147,57 @@ tr.top-4 {
   border-left: 3px solid #10b981;
 }
 
+/* Filters */
+.filter-container {
+  margin-bottom: 1.5rem;
+}
+
+.filter-title {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.team-filters {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.75rem;
+}
+
+.team-filters::-webkit-scrollbar {
+  height: 4px;
+}
+.team-filters::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+}
+.team-filters::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.filter-btn {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 2px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.filter-btn:hover {
+  transform: scale(1.1);
+}
+
+.filter-btn.active {
+  border-color: var(--btn-color);
+  box-shadow: 0 0 12px var(--btn-color);
+  transform: scale(1.1);
+}
+
 /* Fixtures */
 .fixtures-list {
   display: flex;

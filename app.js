@@ -31,6 +31,7 @@ function App() {
   const [error, setError] = useState(null);
   const [simulatedWinners, setSimulatedWinners] = useState({});
   const [playoffSimulations, setPlayoffSimulations] = useState({});
+  const [filterTeam, setFilterTeam] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -122,9 +123,12 @@ function App() {
   if (loading) return <div className="loader"></div>;
   if (error) return <div className="app-container" style={{color: '#ef4444'}}>{error}</div>;
 
-  // Filter remaining matches (not finalized)
   const allMatches = Object.values(data.matches);
-  const remainingMatches = allMatches.filter(m => !m.finalized).sort((a, b) => {
+  const remainingMatches = allMatches.filter(m => {
+      if(m.finalized) return false;
+      if(filterTeam && m.team1 !== filterTeam && m.team2 !== filterTeam) return false;
+      return true;
+  }).sort((a, b) => {
       if(a.startDate && b.startDate) return new Date(a.startDate) - new Date(b.startDate);
       const aNum = parseInt(a.id.replace(/\D/g, '')) || 0;
       const bNum = parseInt(b.id.replace(/\D/g, '')) || 0;
@@ -256,6 +260,24 @@ function App() {
       <div className="sidebar">
         <div className="glass-panel">
           <h2 className="section-title">Remaining Fixtures</h2>
+          
+          <div className="filter-container">
+            <p className="filter-title">Filter by Team:</p>
+            <div className="team-filters">
+              {Object.keys(TEAM_COLORS).map(team => (
+                <button 
+                  key={team}
+                  className={`filter-btn ${filterTeam === team ? 'active' : ''}`}
+                  onClick={() => setFilterTeam(prev => prev === team ? null : team)}
+                  style={{'--btn-color': TEAM_COLORS[team]}}
+                  title={`Filter ${team}`}
+                >
+                  <TeamLogo team={team} />
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="fixtures-list">
             {remainingMatches.length === 0 && (
               <p style={{color: 'var(--text-secondary)'}}>No remaining fixtures!</p>
